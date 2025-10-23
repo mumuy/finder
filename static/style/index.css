@@ -1,0 +1,132 @@
+.mod-panel{
+    margin-bottom: 25px;
+    background: #fff;
+    border: 1px solid #f0f0f099;
+    border-radius: 8px;
+    box-shadow: 1px 2px 12px rgba(0, 0, 0, 0.02);
+}
+.mod-panel .hd{
+    position: relative;
+    padding: 10px 20px;
+    border-bottom: 1px solid #f0f0f099;
+    line-height: 24px;
+}
+.mod-panel .hd .title{
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;  
+    color: var(--title-color);
+}
+.mod-panel .hd::before{
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: #2095f2;
+    margin-top: -12px;
+    border-radius: 3px;
+}
+.mod-panel .hd .more{
+    float: right;
+    position: relative;
+    padding-right: 20px;
+    text-decoration: none;
+    color: #999;
+}
+.mod-panel .hd .more::after{
+    position: absolute;
+    top: 50%;
+    right: 2px;
+    content:'';
+    width: 8px;
+    height: 8px;
+    margin-top: -4px;
+    border-right: 1px solid #999;
+    border-bottom: 1px solid #999;
+    transform: rotate(-45deg);
+}
+.mod-panel .bd{
+    padding: 20px;
+}
+.mod-panel .canvas-head{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    margin-bottom: 5px;
+    background: #f6f8fa;
+    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.mod-panel .canvas-left{
+    flex: 1;
+    margin: 2px 0;
+    text-align: left;
+}
+.mod-panel .canvas-right{
+    flex: 1;
+    margin: 2px 0;
+    text-align: right;
+}
+.mod-panel .canvas-body canvas{
+    display: block;
+    margin: -1px;
+    border: 1px solid #f4f4f4;
+    border-radius: 2px;
+    box-sizing: border-box;
+}
+.mod-panel .btn{
+    display: inline-block;
+    height: 36px;
+    min-width: 64px;
+    padding: 0 12px;
+    background: #2095f2;
+    border: medium none;
+    box-sizing: border-box;
+    line-height: 36px;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 15px;
+    color: #fff;
+    cursor: pointer;
+    outline: none;
+    border-radius: 4px;
+    text-decoration: none;
+}
+.mod-panel .btn:hover{
+    background: #207fcc;
+}
+.mod-panel .btn-green{
+    background: #4bae4f;
+}
+.mod-panel .btn-green:hover{
+    background: #47a04b;
+}
+.mod-panel .btn-black{
+    background: #333333;
+}
+.mod-panel .btn-black:hover{
+    background: #222222;
+}
+.mod-panel input[type="text"]{
+    width: 120px;
+    padding: 5px 12px;
+    background: #fcfcfc;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    line-height: 24px;
+    vertical-align: middle;
+    outline: none;
+    box-sizing: border-box;
+}
+
+@media screen and (max-width: 640px) {
+    .mod-panel .bd{
+        padding: 15px;
+    }
+    .mod-panel .canvas-wrapper{
+        overflow-x: auto;
+    }
+}

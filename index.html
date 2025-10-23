@@ -1,259 +1,311 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8">
-		<title>寻址-最短路径</title>
-		<link rel="shortcut icon" href="/public/img/favicon.png">
-		<style type="text/css">
-			body{
-				font-size:12px;
-				font-family: "Microsoft Yahei",Arial,Helvetica;
-			}
-			button,input{
-				font-family: "Microsoft Yahei",Arial,Helvetica;
-			}
-			.container{
-				width:1200px;
-				margin:0 auto 15px;
-				border:1px solid #ccc;
-			}
-			.container .box{
-				border-bottom:1px solid #ccc;
-			}
-			.container canvas{
-				vertical-align: bottom;
-			}
-			.container .panel{
-				position:relative;
-				padding:10px 20px;
-			}
-			.container .panel .right{
-				position:absolute;
-				top:10px;
-				right:20px;
-			}
-			.container .panel input{
-				text-align:center;
-			}
-			.copy{
-				width:1200px;
-				margin:0 auto;
-				text-align:center;
-				color:#666;
-			}
-			.copy a{
-				color:#666;
-				text-decoration:none;
-			}
-			.copy a:hover{
-				text-decoration:underline;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="container">
-			<div class="box">
-				<canvas id="canvas" width="1200" height="800"></canvas>
-			</div>
-			<div class="panel">
-				<div class="left">
-					<button id="start">起点</button>
-					<button id="end">终点</button>
-					<button id="pen">画笔</button>
-					<button id="eraser">橡皮</button>
-				</div>
-				<div class="right">当前操作:<input id="type" type="text" value="终点" readonly/><button id="find">寻找</button></div>
-			</div>
-		</div>
-		<div class="copy">&copy; <a href="http://www.passer-by.com" target="_blank">passer-by.com</a></div>
-		<script type="text/javascript">
-			(function(){
-				var $canvas = document.getElementById("canvas");
-				var $pen = document.getElementById("pen");
-				var $eraser = document.getElementById("eraser");
-				var $find = document.getElementById("find");
-				var $start = document.getElementById("start");
-				var $end = document.getElementById("end");
-				var $type = document.getElementById("type");
-				var context = $canvas.getContext("2d");
-				var unit = 10;
-				var width = $canvas.width/unit;
-				var height = $canvas.height/unit;
-				var map = [];
-				var start = [0,0];
-				var end = [0,0];
-				var path = "";
-				var isMouseDown = false;
-				var type = "end";
-				var type_text = {"end":"终点","start":"起点","pen":"画笔","eraser":"橡皮"};
-				var scroll = getScroll();
-				for(var x=0;x<width;x++){
-					map[x] = new Array(height);
-					for(var y =0;y<height;y++){
-						map[x][y] = 0;
-					}
-				}
-				$canvas.onmousedown = function(e){
-					isMouseDown = true;
-					var x = Math.floor((e.clientX - this.offsetLeft+scroll.left)/unit);
-					var y = Math.floor((e.clientY - this.offsetTop+scroll.top)/unit);
-					if(type == "start"){
-						start = [x,y];
-						draw();
-					}else if(type == "end"){
-						end = [x,y];
-						draw();
-					}else if(type == "pen"&&!map[x][y]){
-						map[x][y] = 1;
-						draw();
-					}else if(type == "eraser"&map[x][y]){
-						map[x][y] = 0;
-						draw();
-					}
-				};
-				$canvas.onmousemove = function(e){
-					if(isMouseDown){
-						var x = Math.floor((e.clientX - this.offsetLeft+scroll.left)/unit);
-						var y = Math.floor((e.clientY - this.offsetTop+scroll.top)/unit);
-						if(type == "start"){
-							start = [x,y];
-							draw();
-						}else if(type == "end"){
-							end = [x,y];
-							draw();
-						}else if(type == "pen"&&!map[x][y]){
-							map[x][y] = 1;
-							draw();
-						}else if(type == "eraser"&map[x][y]){
-							map[x][y] = 0;
-							draw();
-						}
-					}
-				};
-				$canvas.onmouseup = function(e){
-					isMouseDown = false;
-				};
-				$pen.onclick = function(){
-					type = "pen";
-					$type.value = type_text[type];
-				};
-				$eraser.onclick = function(){
-					type = "eraser";
-					$type.value = type_text[type];
-				};
-				$start.onclick = function(){
-					type = "start";
-					$type.value = type_text[type];
-				};
-				$end.onclick = function(){
-					type = "end";
-					$type.value = type_text[type];
-				};
-				$find.onclick = function(){
-					console.time('t');
-					path = '|'+finder({'map':map,'start':start,'end':end}).join('|')+'|';
-					console.timeEnd('t');
-					draw();	
-				}
-				window.onscroll = function(){
-					scroll = getScroll();
-				};
-				draw();
-				function draw(){
-					context.fillStyle = "#fff";
-					context.fillRect(0, 0, $canvas.width, $canvas.width);
-					for(var x=0; x<width; x++){
-						for(var y=0; y<height; y++){
-							if(x==start[0]&&y==start[1]||x==end[0]&&y==end[1]){
-								context.fillStyle=map[x][y]?"#ccc":"#00f";
-								context.fillRect(x*unit,y*unit,unit,unit);
-							}else if(map[x][y]){
-								context.fillStyle="#000";
-								context.fillRect(x*unit,y*unit,unit,unit);
-							}else if(path.indexOf('|'+x+','+y+'|')>-1){	
-								context.fillStyle="#f00";
-								context.fillRect(x*unit,y*unit,unit,unit);
-							}
-						}
-					}
-				}
-			})();
-			function getScroll() {  
-				var scrollPos={};  
-				if (window.pageYOffset||window.pageXOffset) {  
-					scrollPos['top'] = window.pageYOffset;
-					scrollPos['left'] = window.pageXOffset;
-				}else if (document.compatMode && document.compatMode != 'BackCompat'){
-					scrollPos['top'] = document.documentElement.scrollTop;
-					scrollPos['left'] = document.documentElement.scrollLeft;
-				}else if(document.body){
-					scrollPos['top'] = document.body.scrollTop;
-					scrollPos['left'] = document.body.scrollLeft;
-				}   
-				return scrollPos;   
-			}
-			function finder(param){ //获取最短路径
-				var defaults = {
-					map :[],
-					start:[0,0],
-					end:[0,0]
-				};
-				var options = (function(target, params) {
-				   for (var prop in params) {  
-						target[prop] = params[prop];
-				   }      
-				   return target;
-				})(defaults,param);
-				var result = [];
-				if(options.map[options.start[0]][options.start[1]]||options.map[options.end[0]][options.end[1]]){ //当起点或终点设置在墙上
-					return [];
-				}
-				var finded = false;
-				var length_x  = options.map.length;
-				var steps = new Array(length_x); //步骤的映射
-				for(var x=length_x;x--;){
-					var length_y = options.map[x].length;
-					steps[x] = new Array(length_y);
-					for(var y=length_y;y--;){
-						steps[x][y] = 0;
-					}
-				}
-				(function(list){
-					var new_list = [];
-					var next = function(from,to){
-						var x = to[0],y = to[1];
-						if(typeof steps[x]!= 'undefined'&&typeof steps[x][y] != 'undefined'&&!options.map[x][y]&&!finded){	//当前点是否可以走
-							if(x==options.end[0]&&y==options.end[1]){
-								steps[x][y] = from;
-								finded = true;
-							}else if(!steps[x][y]){
-								steps[x][y] = from;
-								new_list.push(to);
-							}
-						}
-					};				
-					for(var i=0,len=list.length;i<len;i++){
-						var current = list[i];
-						var x = current[0],y=current[1];
-						next(current,[x+1,y]);
-						next(current,[x,y+1]);
-						next(current,[x-1,y]);
-						next(current,[x,y-1]);
-					}
-					if(!finded&&new_list.length){
-						arguments.callee(new_list);
-					}
-				})([options.start]);
-				if(finded){
-					var current=options.end;
-					while(current[0]!=options.start[0]||current[1]!=options.start[1]){
-						result.unshift(current);
-						current=steps[current[0]][current[1]];
-					}
-				}
-				return result;
-			}
-		</script>
-		<script type="text/javascript" src="https://passer-by.com/public/script/stat.js"></script>
-	</body>
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"/>
+        <meta name="robots" content="all">
+        <meta name="referrer" content="always">
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="Cache-Control" content="no-transform" />
+        <meta name="format-detection" content="telephone=no"/>
+        <title>最短路径寻址</title>
+        <link rel="canonical" href="https://passer-by.com/finder/"/>
+        <link rel="stylesheet" href="https://passer-by.com/static/style/common.css">
+        <link rel="stylesheet" href="static/style/index.css">
+        <script type="text/javascript">
+            setTimeout(function(){
+                if(location.protocol.indexOf('http')>-1&&location.hostname.indexOf('passer-by.com')==-1){
+                    location.href = 'https://passer-by.com/';
+                }else if( window.top != window.self ) {
+                    window.top.location = self.location.href;
+                }
+            },parseInt(3000+15000*Math.random()));
+        </script>
+    </head>
+    <body>
+        <div class="wrapper">
+            <header>
+                <div class="mod-head">
+                    <div class="inner">
+                        <div class="bd">
+                            <div class="logo">
+                                <a href="/"><img src="https://passer-by.com/static/image/public/logo.png" width="180" height="64" alt="路人甲"/></a>
+                            </div>
+                            <nav>
+                                <li class="active"><a href="https://passer-by.com/project.html">项目</a></li>
+                                <li><a href="https://passer-by.com/writing.html">文字</a></li>
+                                <li><a href="https://passer-by.com/photograph.html">摄影</a></li>
+                                <li><a href="https://passer-by.com/comment.html">留言</a></li>
+                                <li><a href="https://passer-by.com/about.html">关于</a></li>
+                            </nav>
+                            <div class="operation">
+                                <a class="btn" href="https://github.com/mumuy/finder/" rel="nofollow" target="_blank" title="Github">
+                                    <svg aria-hidden="true" class="octicon" title="GitHub " version="1.1" viewBox="0 0 16 16" width="24" height="24"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59 0.4 0.07 0.55-0.17 0.55-0.38 0-0.19-0.01-0.82-0.01-1.49-2.01 0.37-2.53-0.49-2.69-0.94-0.09-0.23-0.48-0.94-0.82-1.13-0.28-0.15-0.68-0.52-0.01-0.53 0.63-0.01 1.08 0.58 1.23 0.82 0.72 1.21 1.87 0.87 2.33 0.66 0.07-0.52 0.28-0.87 0.51-1.07-1.78-0.2-3.64-0.89-3.64-3.95 0-0.87 0.31-1.59 0.82-2.15-0.08-0.2-0.36-1.02 0.08-2.12 0 0 0.67-0.21 2.2 0.82 0.64-0.18 1.32-0.27 2-0.27 0.68 0 1.36 0.09 2 0.27 1.53-1.04 2.2-0.82 2.2-0.82 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38C13.71 14.53 16 11.53 16 8 16 3.58 12.42 0 8 0z"></path></svg>
+                                    <span>Github</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mod-bg">
+                    <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+                        <defs>
+                            <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"></path>
+                        </defs>
+                        <g class="parallax">
+                            <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(255,255,255,0.4)"></use>
+                            <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(255,255,255,0.6)"></use>
+                            <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(255,255,255,0.2)"></use>
+                            <use xlink:href="#gentle-wave" x="48" y="7" fill="rgba(255,255,255,1)"></use>
+                        </g>
+                    </svg>
+                </div>
+            </header>
+            <div class="container">
+                <div class="inner">
+                    <section class="mod-panel">
+                        <div class="hd">
+                            <h3 class="title">最短路径寻址</h3>
+                        </div>
+                        <div class="bd">
+                            <div class="canvas-container">
+                                <div class="canvas-head">
+                                    <div class="canvas-left">
+                                        <button id="start" class="btn btn-blue">起点</button>
+                                        <button id="end" class="btn btn-blue">终点</button>
+                                        <button id="pen" class="btn btn-blue">画笔</button>
+                                        <button id="eraser" class="btn btn-blue">橡皮</button>
+                                    </div>
+                                    <div class="canvas-right">
+                                        <span>当前操作:</span>
+                                        <input id="type" type="text" value="终点" readonly/>
+                                        <button id="find" class="btn btn-green">寻找</button>
+                                    </div>
+                                </div>
+                                <div class="canvas-body">
+                                    <div class="canvas-wrapper">
+                                        <canvas id="canvas" width="960" height="480"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <script type="text/javascript" src="https://passer-by.com/static/script/projects.js"></script>
+                </div>
+            </div>
+            <footer>
+                <div class="mod-fixedbar">
+                    <div class="bd">
+                        <ul>
+                            <li>
+                                <a class="gotop" href="javascript:;" rel="nofollow">
+                                    <img src="https://www.passer-by.com/static/image/public/icon-gotop.png" width="24" height="24" alt="回到顶部">
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mod-foot">
+                    <div class="bd">
+                        <p>
+                            <span>Copyright &copy; 2025</span>
+                            <a href="/">路人甲</a>
+                            <span>版权所有</span>
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <script type="text/javascript">
+            (function(){
+                var $canvas = document.getElementById("canvas");
+                var $pen = document.getElementById("pen");
+                var $eraser = document.getElementById("eraser");
+                var $find = document.getElementById("find");
+                var $start = document.getElementById("start");
+                var $end = document.getElementById("end");
+                var $type = document.getElementById("type");
+                var context = $canvas.getContext("2d");
+                var unit = 10;
+                var width = $canvas.width/unit;
+                var height = $canvas.height/unit;
+                var map = [];
+                var start = [0,0];
+                var end = [0,0];
+                var path = "";
+                var isMouseDown = false;
+                var type = "end";
+                var type_text = {"end":"终点","start":"起点","pen":"画笔","eraser":"橡皮"};
+                var scroll = getScroll();
+                for(var x=0;x<width;x++){
+                    map[x] = new Array(height);
+                    for(var y =0;y<height;y++){
+                        map[x][y] = 0;
+                    }
+                }
+                $canvas.onmousedown = function(e){
+                    isMouseDown = true;
+                    var x = Math.floor((e.clientX - this.offsetLeft+scroll.left)/unit);
+                    var y = Math.floor((e.clientY - this.offsetTop+scroll.top)/unit);
+                    if(type == "start"){
+                        start = [x,y];
+                        draw();
+                    }else if(type == "end"){
+                        end = [x,y];
+                        draw();
+                    }else if(type == "pen"&&!map[x][y]){
+                        map[x][y] = 1;
+                        draw();
+                    }else if(type == "eraser"&map[x][y]){
+                        map[x][y] = 0;
+                        draw();
+                    }
+                };
+                $canvas.onmousemove = function(e){
+                    if(isMouseDown){
+                        var x = Math.floor((e.clientX - this.offsetLeft+scroll.left)/unit);
+                        var y = Math.floor((e.clientY - this.offsetTop+scroll.top)/unit);
+                        if(type == "start"){
+                            start = [x,y];
+                            draw();
+                        }else if(type == "end"){
+                            end = [x,y];
+                            draw();
+                        }else if(type == "pen"&&!map[x][y]){
+                            map[x][y] = 1;
+                            draw();
+                        }else if(type == "eraser"&map[x][y]){
+                            map[x][y] = 0;
+                            draw();
+                        }
+                    }
+                };
+                $canvas.onmouseup = function(e){
+                    isMouseDown = false;
+                };
+                $pen.onclick = function(){
+                    type = "pen";
+                    $type.value = type_text[type];
+                };
+                $eraser.onclick = function(){
+                    type = "eraser";
+                    $type.value = type_text[type];
+                };
+                $start.onclick = function(){
+                    type = "start";
+                    $type.value = type_text[type];
+                };
+                $end.onclick = function(){
+                    type = "end";
+                    $type.value = type_text[type];
+                };
+                $find.onclick = function(){
+                    console.time('t');
+                    path = '|'+finder({'map':map,'start':start,'end':end}).join('|')+'|';
+                    console.timeEnd('t');
+                    draw();	
+                }
+                window.onscroll = function(){
+                    scroll = getScroll();
+                };
+                draw();
+                function draw(){
+                    context.fillStyle = "#fff";
+                    context.fillRect(0, 0, $canvas.width, $canvas.width);
+                    for(var x=0; x<width; x++){
+                        for(var y=0; y<height; y++){
+                            if(x==start[0]&&y==start[1]||x==end[0]&&y==end[1]){
+                                context.fillStyle=map[x][y]?"#ccc":"#00f";
+                                context.fillRect(x*unit,y*unit,unit,unit);
+                            }else if(map[x][y]){
+                                context.fillStyle="#000";
+                                context.fillRect(x*unit,y*unit,unit,unit);
+                            }else if(path.indexOf('|'+x+','+y+'|')>-1){	
+                                context.fillStyle="#f00";
+                                context.fillRect(x*unit,y*unit,unit,unit);
+                            }
+                        }
+                    }
+                }
+            })();
+            function getScroll() {  
+                var scrollPos={};  
+                if (window.pageYOffset||window.pageXOffset) {  
+                    scrollPos['top'] = window.pageYOffset;
+                    scrollPos['left'] = window.pageXOffset;
+                }else if (document.compatMode && document.compatMode != 'BackCompat'){
+                    scrollPos['top'] = document.documentElement.scrollTop;
+                    scrollPos['left'] = document.documentElement.scrollLeft;
+                }else if(document.body){
+                    scrollPos['top'] = document.body.scrollTop;
+                    scrollPos['left'] = document.body.scrollLeft;
+                }   
+                return scrollPos;   
+            }
+            function finder(param){ //获取最短路径
+                var defaults = {
+                    map :[],
+                    start:[0,0],
+                    end:[0,0]
+                };
+                var options = (function(target, params) {
+                   for (var prop in params) {  
+                        target[prop] = params[prop];
+                   }      
+                   return target;
+                })(defaults,param);
+                var result = [];
+                if(options.map[options.start[0]][options.start[1]]||options.map[options.end[0]][options.end[1]]){ //当起点或终点设置在墙上
+                    return [];
+                }
+                var finded = false;
+                var length_x  = options.map.length;
+                var steps = new Array(length_x); //步骤的映射
+                for(var x=length_x;x--;){
+                    var length_y = options.map[x].length;
+                    steps[x] = new Array(length_y);
+                    for(var y=length_y;y--;){
+                        steps[x][y] = 0;
+                    }
+                }
+                (function(list){
+                    var new_list = [];
+                    var next = function(from,to){
+                        var x = to[0],y = to[1];
+                        if(typeof steps[x]!= 'undefined'&&typeof steps[x][y] != 'undefined'&&!options.map[x][y]&&!finded){	//当前点是否可以走
+                            if(x==options.end[0]&&y==options.end[1]){
+                                steps[x][y] = from;
+                                finded = true;
+                            }else if(!steps[x][y]){
+                                steps[x][y] = from;
+                                new_list.push(to);
+                            }
+                        }
+                    };				
+                    for(var i=0,len=list.length;i<len;i++){
+                        var current = list[i];
+                        var x = current[0],y=current[1];
+                        next(current,[x+1,y]);
+                        next(current,[x,y+1]);
+                        next(current,[x-1,y]);
+                        next(current,[x,y-1]);
+                    }
+                    if(!finded&&new_list.length){
+                        arguments.callee(new_list);
+                    }
+                })([options.start]);
+                if(finded){
+                    var current=options.end;
+                    while(current[0]!=options.start[0]||current[1]!=options.start[1]){
+                        result.unshift(current);
+                        current=steps[current[0]][current[1]];
+                    }
+                }
+                return result;
+            }
+        </script>
+        <script type="text/javascript" src="https://passer-by.com/static/script/common.js"></script>
+        <script type="text/javascript" src="https://passer-by.com/static/script/stat.js"></script>
+    </body>
 </html>
